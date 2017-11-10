@@ -1,0 +1,18 @@
+defmodule <%= module_name %> do
+  @moduledoc false
+
+  use Supervisor
+
+  @supervisor __MODULE__
+
+  def start_link(args) do
+    Supervisor.start_link(@supervisor, args, name: @supervisor)
+  end
+
+  def init(_args) do
+    [
+      # Todo: child modules or specs here
+    ]
+    |> Supervisor.init(strategy: :one_for_one)
+  end
+end

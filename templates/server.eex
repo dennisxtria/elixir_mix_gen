@@ -1,0 +1,36 @@
+defmodule <%= module_name %> do
+  @moduledoc false
+
+  use GenServer
+
+  @name __MODULE__
+
+  # Client
+
+  @doc false
+  def start_link(args) do
+    GenServer.start_link(@name, args)
+  end
+
+  # Server (callbacks)
+
+  @doc false
+  def init(state) do
+    {:ok, state}
+  end
+
+  @doc false
+  def handle_call(_request, _from, state) do
+    {:reply, nil, state}
+  end
+
+  @doc false
+  def handle_cast(_request, state) do
+    {:noreply, state}
+  end
+
+  @doc false
+  def handle_info(_request, state) do
+    {:noreply, state}
+  end
+end
