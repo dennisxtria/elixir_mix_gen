@@ -1,14 +1,7 @@
 defmodule ElixirMixGenTest do
   use ExUnit.Case
-  #doctest Mix.Tasks.Gen.Server
 
   alias ElixirMixGen.CLI
-
-  # setup do
-  #   on_exit(fn ->
-  #
-  #   end)
-  # end
 
   test "can sanitize path" do
     assert CLI.sanitize("a/b/c") == {:error, :invalid_file_extension}
@@ -21,32 +14,20 @@ defmodule ElixirMixGenTest do
 
   end
 
-  # test "can create module name from path" do
-  #   assert CLI.create_module_name("project/feature/worker.ex") == {:ok, "Project.Feature.Worker"}
-  #   # assert CLI.create_module_name("project\\feature\\worker.ex") == {:ok, "Project.Feature.Worker"}
-  #   assert CLI.create_module_name("lib/project/feature/worker.ex") == {:ok, "Project.Feature.Worker"}
-  #   assert CLI.create_module_name("project/feature/worker.exs") == {:error, :invalid_extension}
-  #   # assert CLI.create_module_name("c:\\project\\feature\\worker.ex") == {:error, :invalid_path}
-  #   assert CLI.create_module_name("/mnt/c/project/feature/worker.ex") == {:error, :invalid_path}
-  # end
-  #
-  # test "can evaluate module name" do
-  #   server_tpl = CLI.evaluate_module_name("TestModule", "templates/server.eex")
-  #   assert String.starts_with?(server_tpl, "defmodule TestModule do") == true
-  #
-  #   # todo: supervisor
-  # end
-  #
-  # test "can create file" do
-  #   path = "project/feature/worker.ex"
-  #   content = "defmodule Project.Feature.Worker do end"
-  #
-  #   assert CLI.create_file(path, content) == :ok
-  #   #todo assert that file has been created
-  #   #todo assert that content is correct
-  #   #todo cleanup
-  #
-  #
-  # end
+  test "creates and evaluates template" do
+    assert CLI.create_and_evaluate("a/b_c/d.ex", "test/templates/test.eex") == "defmodule A.BC.D do end\n"
+    assert CLI.create_and_evaluate("a/b c/d.ex", "test/templates/test.eex") == "defmodule A.B c.D do end\n"
+    assert CLI.create_and_evaluate("d.ex", "test/templates/test.eex") == "defmodule D do end\n"
+    assert CLI.create_and_evaluate("a/b/c", "test/templates/test.eex") == "defmodule A.B.C do end\n"
+  end
+
+  test "can create file" do
+    path = "a/b/c.ex"
+    content = "defmodule A.B.C do end\n"
+
+    assert :ok = CLI.create_file(path, content)
+    assert {:ok, ^content} = File.read("lib/#{path}")
+    assert {:ok, _} = File.rm_rf("lib/a")
+  end
 
 end

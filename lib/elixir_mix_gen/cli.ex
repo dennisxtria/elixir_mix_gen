@@ -3,16 +3,18 @@ defmodule ElixirMixGen.CLI do
   The CLI implements the needed procedure that has to be applied to the path
   in order to have a proper format for the module name.
 
-  This module has the following functions: `main/2`, `sanitize/1`, `split_and_check/1`, `join_parts/1`,
-  `create_and_evaluate/2`, `create_module_name/1`, `evaluate_module_name/2`, `create_file/2` and `check_parts/2`.
+  This module has the following functions: `main/2`, `sanitize/1`, `create_and_evaluate/2` and `create_file/2`.
   """
 
   @lib "lib"
 
+  @doc """
+  The main entry point for executing the task.
+  """
   def main(path, template) do
     with \
       {:ok, formatted_path} <- sanitize(path),
-      {:ok, server_content} <- create_and_evaluate(formatted_path, template),
+      server_content <- create_and_evaluate(formatted_path, template),
       :ok <- create_file(formatted_path, server_content)
     do
       IO.puts("The file was successfully created in the given path with the appropriate module name.")
@@ -41,10 +43,8 @@ defmodule ElixirMixGen.CLI do
     end
   end
 
-  @doc """
-  Downcases and splits the path into a list at the path separator.
-  """
-  def split_and_check(path) do
+  # Downcases and splits the path into a list at the path separator.
+  defp split_and_check(path) do
     path
     |> String.downcase()
     |> Path.rootname()
@@ -52,10 +52,8 @@ defmodule ElixirMixGen.CLI do
     |> check_parts([])
   end
 
-  @doc """
-  Reverses and joins a list of paths.
-  """
-  def join_parts(split_path_list) do
+  # Reverses and joins a list of paths.
+  defp join_parts(split_path_list) do
     split_path_list
     |> Enum.reverse
     |> Path.join()
@@ -66,17 +64,13 @@ defmodule ElixirMixGen.CLI do
   Creates module name and outputs the file content.
   """
   def create_and_evaluate(formatted_path, template) do
-    server_content =
-      formatted_path
-      |> create_module_name()
-      |> evaluate_module_name(template)
-    {:ok, server_content}
+    formatted_path
+    |> create_module_name()
+    |> evaluate_module_name(template)
   end
 
-  @doc """
-  Creates a camelized module name.
-  """
-  def create_module_name(path) do
+  # Creates a camelized module name.
+  defp create_module_name(path) do
     path
     |> Path.rootname()
     |> Path.split()
@@ -84,12 +78,10 @@ defmodule ElixirMixGen.CLI do
     |> Enum.join(".")
   end
 
-  @doc """
-  Given the path and the module name, the output is
-  the content of the server/supervisor file
-  with the appropriate module name created.
-  """
-  def evaluate_module_name(module_name, template), do: EEx.eval_file(template, [module_name: module_name])
+  # Given the path and the module name, the output is
+  # the content of the server/supervisor file
+  # with the appropriate module name created.
+  defp evaluate_module_name(module_name, template), do: EEx.eval_file(template, [module_name: module_name])
 
   @doc """
   The server/supervisor file is created in the path that is given.
@@ -103,12 +95,11 @@ defmodule ElixirMixGen.CLI do
     File.write(output_path, server_content)
   end
 
-  @doc """
-  Parses the split path, checking that each part
-  is correctly formatted, the Elixir way.
-  """
-  def check_parts([], acc), do: {:ok, acc}
-  def check_parts([h | t], acc) do
+
+  # Parses the split path, checking that each part
+  # is correctly formatted, the Elixir way.
+  defp check_parts([], acc), do: {:ok, acc}
+  defp check_parts([h | t], acc) do
     with \
       true <- Regex.match?(~r/^[a-z]((\_)*[a-z0-9])*$/, h),
       false <- Regex.match?(~r/__/, h)

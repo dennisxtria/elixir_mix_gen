@@ -6,13 +6,11 @@ defmodule Mix.Tasks.Gen.Server do
   *Note: The path has to comply with the Elixir naming conventions.*
 
   ## Examples of Usage
-      mix gen.server this/is/correct.ex
+      mix gen.server [path]
 
-      mix gen.server this/1s.not/c0rrect.ex
-
-      mix gen.server this/1s.not/c0rrect.exs
-
-  This module also has a `run/1` function.
+  Where [path] should be a valid module path. A valid module path should:
+  * have files and folders snake cased
+  * end with the *.ex* extension
   """
 
   use Mix.Task
