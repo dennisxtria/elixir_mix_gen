@@ -95,7 +95,6 @@ defmodule ElixirMixGen.CLI do
     File.write(output_path, server_content)
   end
 
-
   # Parses the split path, checking that each part
   # is correctly formatted, the Elixir way.
   defp check_parts([], acc), do: {:ok, acc}
