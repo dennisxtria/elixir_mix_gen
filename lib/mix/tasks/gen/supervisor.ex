@@ -19,11 +19,13 @@ defmodule Mix.Tasks.Gen.Supervisor do
 
   alias ElixirMixGen.CLI
 
+  @supervisor_template "templates/supervisor.eex"
+
   @shortdoc "Creates a Supervisor file in the given path with the appropriate module name"
 
   def run([]), do: IO.puts("You need to enter a path as an argument.")
   def run([path | _]) do
-    CLI.main(path, "templates/supervisor.eex")
+    CLI.main(path, @supervisor_template)
   end
 
 end

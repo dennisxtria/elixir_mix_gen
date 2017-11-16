@@ -1,56 +1,43 @@
 defmodule ElixirMixGen.CLI do
   @moduledoc """
   The CLI implements the needed procedure that has to be applied to the path
-  in order to have a proper formatted path for the module name.
+  in order to have a proper format for the module name.
 
-  This module has the following functions: `main/2`, `sanitize/1`, `split_and_check/1`, `join_parts/1`
-  `create_module_name/1`, `evaluate_module_name/2`, `create_file/2` and `check_parts/2`.
+  This module has the following functions: `main/2`, `sanitize/1`, `split_and_check/1`, `join_parts/1`,
+  `create_and_evaluate/2`, `create_module_name/1`, `evaluate_module_name/2`, `create_file/2` and `check_parts/2`.
   """
 
   @lib "lib"
 
   def main(path, template) do
     with \
-      {:ok, formatted_path} <- sanitize(path)
+      {:ok, formatted_path} <- sanitize(path),
+      {:ok, server_content} <- create_and_evaluate(formatted_path, template),
+      :ok <- create_file(formatted_path, server_content)
     do
-      server_content = create_and_evaluate(formatted_path, template)
-      with \
-        :ok <- create_file(formatted_path, server_content)
-      do
-        IO.puts("File created.")
-      else
-        {:error, reason} -> IO.puts("Exited with error #{reason}")
-      end
+      IO.puts("The file was successfully created in the given path with the appropriate module name.")
     else
-      {:error, :invalid_path_format} ->
-        IO.puts("It looks like you have entered a path that does not comply with the Elixir naming conventions.")
       {:error, :invalid_file_extension} ->
         IO.puts("It looks like you have entered an invalid extension. The path needs to end with \".ex\".")
+      {:error, :invalid_path_format} ->
+        IO.puts("It looks like you have entered a path that does not comply with the Elixir naming conventions.")
+      {:error, reason} ->
+        IO.puts("Exited with error #{reason}.")
     end
-  end
-
-  @doc """
-  Creates module name and outputs
-  """
-  def create_and_evaluate(formatted_path, template) do
-    formatted_path
-    |> create_module_name()
-    |> evaluate_module_name(template)
   end
 
   @doc """
   Splits and checks the structure of the path.
   """
   def sanitize(path) do
-    split_path = split_and_check(path)
     with \
-      {:extension, ".ex"} <- {:extension, Path.extname(path)},
-      {:format, true} <- {:format, is_list(split_path)}
+      ".ex" <- Path.extname(path),
+      {:ok, split_path} <- split_and_check(path)
     do
       {:ok, join_parts(split_path)}
     else
-      {:extension, _} -> {:error, :invalid_file_extension}
-      {:format, false} -> {:error, :invalid_path_format}
+      {:error, :invalid_path_format} -> {:error, :invalid_path_format}
+      _ -> {:error, :invalid_file_extension}
     end
   end
 
@@ -76,6 +63,17 @@ defmodule ElixirMixGen.CLI do
   end
 
   @doc """
+  Creates module name and outputs the file content.
+  """
+  def create_and_evaluate(formatted_path, template) do
+    server_content =
+      formatted_path
+      |> create_module_name()
+      |> evaluate_module_name(template)
+    {:ok, server_content}
+  end
+
+  @doc """
   Creates a camelized module name.
   """
   def create_module_name(path) do
@@ -91,9 +89,7 @@ defmodule ElixirMixGen.CLI do
   the content of the server/supervisor file
   with the appropriate module name created.
   """
-  def evaluate_module_name(module_name, template) do
-    EEx.eval_file(template, [module_name: module_name])
-  end
+  def evaluate_module_name(module_name, template), do: EEx.eval_file(template, [module_name: module_name])
 
   @doc """
   The server/supervisor file is created in the path that is given.
@@ -111,7 +107,7 @@ defmodule ElixirMixGen.CLI do
   Parses the split path, checking that each part
   is correctly formatted, the Elixir way.
   """
-  def check_parts([], acc), do: acc
+  def check_parts([], acc), do: {:ok, acc}
   def check_parts([h | t], acc) do
     with \
       true <- Regex.match?(~r/^[a-z]((\_)*[a-z0-9])*$/, h),

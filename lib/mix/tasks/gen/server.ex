@@ -19,11 +19,13 @@ defmodule Mix.Tasks.Gen.Server do
 
   alias ElixirMixGen.CLI
 
+  @server_template "templates/server.eex"
+
   @shortdoc "Creates a GenServer file in the given path with the appropriate module name"
 
   def run([]), do: IO.puts("You need to enter a path as an argument.")
   def run([path | _]) do
-    CLI.main(path, "templates/server.eex")
+    CLI.main(path, @server_template)
   end
 
 end
