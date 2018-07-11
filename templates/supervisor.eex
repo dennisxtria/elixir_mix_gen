@@ -5,10 +5,13 @@ defmodule <%= module_name %> do
 
   @supervisor __MODULE__
 
-  def start_link(args) do
+  def start_link(args :: term) do
     Supervisor.start_link(@supervisor, args, name: @supervisor)
   end
 
+  ## Callbacks
+
+  @doc false
   def init(_args) do
     [
       # Todo: child modules or specs here

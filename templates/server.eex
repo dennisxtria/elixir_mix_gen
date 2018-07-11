@@ -8,11 +8,11 @@ defmodule <%= module_name %> do
   # Client
 
   @doc false
-  def start_link(args) do
-    GenServer.start_link(@name, args)
+  def start_link(args :: term) do
+    GenServer.start_link(@name, args, name: @name)
   end
 
-  # Server (callbacks)
+  ## Callbacks
 
   @doc false
   def init(state) do

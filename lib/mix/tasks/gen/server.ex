@@ -22,8 +22,8 @@ defmodule Mix.Tasks.Gen.Server do
   @shortdoc "Creates a GenServer file in the given path with the appropriate module name"
 
   def run([]), do: IO.puts("You need to enter a path as an argument.")
+
   def run([path | _]) do
     CLI.main(path, @server_template)
   end
-
 end

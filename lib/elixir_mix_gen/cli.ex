@@ -12,17 +12,23 @@ defmodule ElixirMixGen.CLI do
   The main entry point for executing the task.
   """
   def main(path, template) do
-    with \
-      {:ok, formatted_path} <- sanitize(path),
-      server_content <- create_and_evaluate(formatted_path, template),
-      :ok <- create_file(formatted_path, server_content)
-    do
-      IO.puts("The file was successfully created in the given path with the appropriate module name.")
+    with {:ok, formatted_path} <- sanitize(path),
+         server_content <- create_and_evaluate(formatted_path, template),
+         :ok <- create_file(formatted_path, server_content) do
+      IO.puts(
+        "The file was successfully created in the given path with the appropriate module name."
+      )
     else
       {:error, :invalid_file_extension} ->
-        IO.puts("It looks like you have entered an invalid extension. The path needs to end with \".ex\".")
+        IO.puts(
+          "It looks like you have entered an invalid extension. The path needs to end with \".ex\"."
+        )
+
       {:error, :invalid_path_format} ->
-        IO.puts("It looks like you have entered a path that does not comply with the Elixir naming conventions.")
+        IO.puts(
+          "It looks like you have entered a path that does not comply with the Elixir naming conventions."
+        )
+
       {:error, reason} ->
         IO.puts("Exited with error #{reason}.")
     end
@@ -32,10 +38,8 @@ defmodule ElixirMixGen.CLI do
   Splits and checks the structure of the path.
   """
   def sanitize(path) do
-    with \
-      ".ex" <- Path.extname(path),
-      {:ok, split_path} <- split_and_check(path)
-    do
+    with ".ex" <- Path.extname(path),
+         {:ok, split_path} <- split_and_check(path) do
       {:ok, join_parts(split_path)}
     else
       {:error, :invalid_path_format} -> {:error, :invalid_path_format}
@@ -55,7 +59,7 @@ defmodule ElixirMixGen.CLI do
   # Reverses and joins a list of paths.
   defp join_parts(split_path_list) do
     split_path_list
-    |> Enum.reverse
+    |> Enum.reverse()
     |> Path.join()
     |> Kernel.<>(".ex")
   end
@@ -81,13 +85,16 @@ defmodule ElixirMixGen.CLI do
   # Given the path and the module name, the output is
   # the content of the server/supervisor file
   # with the appropriate module name created.
-  defp evaluate_module_name(module_name, template), do: EEx.eval_file(template, [module_name: module_name])
+  defp evaluate_module_name(module_name, template) do
+    EEx.eval_file(template, module_name: module_name)
+  end
 
   @doc """
   The server/supervisor file is created in the path that is given.
   """
   def create_file(path, server_content) do
     output_path = Path.join([@lib, path])
+
     output_path
     |> Path.dirname()
     |> File.mkdir_p()
@@ -98,17 +105,14 @@ defmodule ElixirMixGen.CLI do
   # Parses the split path, checking that each part
   # is correctly formatted, the Elixir way.
   defp check_parts([], acc), do: {:ok, acc}
+
   defp check_parts([h | t], acc) do
-    with \
-      true <- Regex.match?(~r/^[a-z]((\_)*[a-z0-9])*$/, h),
-      false <- Regex.match?(~r/__/, h)
-    do
+    with true <- Regex.match?(~r/^[a-z]((\_)*[a-z0-9])*$/, h),
+         false <- Regex.match?(~r/__/, h) do
       acc = [h | acc]
       check_parts(t, acc)
     else
       _ -> {:error, :invalid_path_format}
     end
-
   end
-
 end
